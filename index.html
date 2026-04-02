@@ -1,57 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Newsroom Sekolah</title>
-
-<style>
-body {font-family:sans-serif; margin:0; background:#f4f6f9;}
-.header {background:#1F3A5F; color:white; padding:20px; text-align:center;}
-.container {padding:20px;}
-.card {background:white; padding:15px; border-radius:12px; margin-bottom:10px; box-shadow:0 4px 10px rgba(0,0,0,0.08);}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsroom Athalia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .athalia-blue { background-color: #1F3A5F; }
+        .card-story:hover { transform: translateY(-5px); transition: 0.3s; }
+    </style>
 </head>
-
 <body>
 
-<div class="header">
-Newsroom Sekolah Athalia
-</div>
+    <header class="athalia-blue text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">ATHALIA <span class="font-light text-blue-200">NEWSROOM</span></h1>
+                <p class="text-xs opacity-75">Membangun Kepercayaan Melalui Cerita</p>
+            </div>
+            <i class="fas fa-newspaper text-3xl opacity-50"></i>
+        </div>
+    </header>
 
-<div class="container" id="list"></div>
+    <main class="container mx-auto px-4 py-8">
+        
+        <div class="flex flex-wrap gap-4 mb-8 items-center bg-white p-4 rounded-xl shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Unit:</span>
+                <select id="filterUnit" onchange="renderCards()" class="border-none bg-gray-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                    <option value="ALL">Semua Unit</option>
+                    <option value="TK">TK</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA">SMA</option>
+                </select>
+            </div>
+            <div class="flex-grow text-right text-xs text-gray-400">
+                Data Terakhir di-update otomatis dari Google Sheets
+            </div>
+        </div>
 
-<script>
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="col-span-full text-center py-20">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-900"></div>
+                <p class="mt-4 text-gray-500">Menyusun momen berharga...</p>
+            </div>
+        </div>
+    </main>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbz5KqLB__mQ45cq1VdAeh9eToSHDIbQZugqzWlIMl4/dev";
+    <script>
+        // GANTI INI dengan URL /exec hasil deploy baru tadi!
+        const API_URL = "https://script.google.com/macros/s/AKfycbzIQJRxMmGzKRXTg3bhOjj8d-CWecQ1e5o-qVtWk0CVICT-eNupKfAfxNnBaUpkjB3C/exec";
+        let rawData = [];
 
-fetch(API_URL)
-  .then(res => res.json())
-  .then(data => {
+        async function loadData() {
+            try {
+                const response = await fetch(API_URL);
+                rawData = await response.json();
+                renderCards();
+            } catch (err) {
+                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full">Error koneksi: ${err.message}</p>`;
+            }
+        }
 
-    const container = document.getElementById("list");
+        function renderCards() {
+            const container = document.getElementById("list");
+            const filterValue = document.getElementById("filterUnit").value;
+            container.innerHTML = "";
 
-    data.forEach(item => {
+            const filtered = rawData.filter(item => {
+                const isStatusValid = (item.Status === "PILIH" || item.Status === "TAYANG");
+                const isUnitValid = (filterValue === "ALL" || item.Unit === filterValue);
+                return isStatusValid && isUnitValid;
+            });
 
-      if (item.Status === "PILIH") {
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 italic">Belum ada konten terpilih untuk unit ini.</div>`;
+                return;
+            }
 
-        const div = document.createElement("div");
-        div.className = "card";
+            filtered.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "bg-white rounded-2xl overflow-hidden shadow-md card-story flex flex-col border border-gray-100";
+                
+                const imgSource = (item.Foto && item.Foto !== "-") ? item.Foto : "https://via.placeholder.com/400x250/1F3A5F/FFFFFF?text=Athalia+Activity";
 
-        div.innerHTML = `
-          <b>${item.Kegiatan}</b><br><br>
-          ${item.Cerita}
-        `;
+                div.innerHTML = `
+                    <div class="relative h-48 w-full bg-gray-200">
+                        <img src="${imgSource}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x250?text=Image+Loading...'">
+                        <span class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold text-blue-900 shadow-sm uppercase">${item.Unit}</span>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <div class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-2">${item.Nilai || 'Pertumbuhan'}</div>
+                        <h3 class="text-lg font-bold text-gray-800 leading-tight mb-3">${item.Kegiatan}</h3>
+                        <p class="text-gray-600 text-sm line-clamp-4 mb-4 leading-relaxed italic">"${item.Cerita}"</p>
+                        <div class="mt-auto pt-4 border-t border-gray-50 flex justify-between items-center">
+                            <span class="text-[10px] text-gray-400"><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal.split('T')[0] || item.Tanggal}</span>
+                            <button onclick="copyCaption('${item.Kegiatan}', '${item.Cerita}')" class="text-xs text-blue-800 font-bold hover:underline"><i class="fas fa-copy mr-1"></i> Caption</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
 
-        container.appendChild(div);
+        function copyCaption(title, story) {
+            const text = `✨ *${title}* ✨\n\n${story}\n\n#SekolahAthalia #KarakterSiswa`;
+            navigator.clipboard.writeText(text);
+            alert("Caption siap tempel untuk IG/WA!");
+        }
 
-      }
-
-    });
-
-  });
-
-</script>
-
+        loadData();
+    </script>
 </body>
 </html>
