@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsroom Athalia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f9; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        .athalia-blue { background-color: #1F3A5F; }
+        .card-story:hover { transform: translateY(-5px); transition: 0.3s; }
+        /* Hilangkan scrollbar tapi tetap bisa scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x mandatory; }
+        .snap-item { scroll-snap-align: center; }
+    </style>
+</head>
+<body>
+
+    <header class="athalia-blue text-white py-5 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-5 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl md:text-2xl font-extrabold tracking-tight uppercase">ATHALIA <span class="font-light text-blue-200">NEWSROOM</span></h1>
+                <p class="text-[10px] md:text-xs opacity-85 font-medium tracking-wide">Membangun Kepercayaan Melalui Cerita</p>
+            </div>
+            <i class="fas fa-shield-alt text-xl opacity-40"></i>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6">
+        
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 mb-6 rounded-r-xl shadow-sm">
+            <p class="text-[11px] md:text-xs text-blue-900 leading-relaxed font-semibold">
+                <i class="fas fa-user-lock mr-1"></i> PRIVASI: Akses album penuh memerlukan login email <span class="underline">athalia.parents@sekolahathalia.sch.id</span>.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3 mb-6 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Unit:</span>
+            <select id="filterUnit" onchange="renderCards()" class="bg-gray-100 rounded-lg px-4 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none border-none cursor-pointer">
+                <option value="ALL">Semua Unit</option>
+                <option value="TK">TK</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA">SMA</option>
+            </select>
+        </div>
+
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="col-span-full text-center py-20 italic text-gray-400 text-sm">Menyusun momen berharga...</div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbylwhixi3X_jWCDPMxyUxMmF5-UXE0s1K14GZSi6HcD14ri5FPBPzw04QrCLE6WgqTv/exec";
+        let rawData = [];
+
+        async function loadData() {
+            try {
+                const response = await fetch(API_URL);
+                rawData = await response.json();
+                renderCards();
+            } catch (err) {
+                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full font-bold">Gagal memuat data.</p>`;
+            }
+        }
+
+        function fixDriveLink(url) {
+            if (!url || url === "-" || url.trim() === "") return "";
+            let id = "";
+            const parts = url.split("/");
+            const fileIdx = parts.indexOf("d");
+            if (fileIdx !== -1 && parts[fileIdx + 1]) {
+                id = parts[fileIdx + 1];
+            } else {
+                const match = url.match(/id=([\w-]+)/);
+                if (match) id = match[1];
+            }
+            return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
+        }
+
+        // Fungsi navigasi slider untuk komputer
+        function moveSlider(btn, direction) {
+            const container = btn.parentElement.querySelector('.no-scrollbar');
+            const scrollAmount = container.clientWidth; 
+            container.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+
+        function renderCards() {
+            const container = document.getElementById("list");
+            const filterValue = document.getElementById("filterUnit").value;
+            container.innerHTML = "";
+
+            const filtered = rawData.filter(item => {
+                const isStatusValid = (item.Status === "PILIH" || item.Status === "TAYANG");
+                const isUnitValid = (filterValue === "ALL" || item.Unit === filterValue);
+                return isStatusValid && isUnitValid;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 font-medium italic">Belum ada konten.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "bg-white rounded-3xl overflow-hidden shadow-sm card-story flex flex-col border border-gray-100";
+                
+                const photoLinks = (item.Foto || "").split(",").map(p => p.trim());
+                let photoHTML = "";
+
+                if (photoLinks.length > 1 && photoLinks[0] !== "-") {
+                    photoHTML = `
+                        <div class="relative group h-64">
+                            <button onclick="moveSlider(this, -1)" class="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/60 text-white w-8 h-8 rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+
+                            <div class="flex overflow-x-auto no-scrollbar h-full bg-gray-100 scroll-smooth">
+                                ${photoLinks.map(link => `<img src="${fixDriveLink(link)}" class="snap-item shrink-0 w-full h-full object-cover">`).join('')}
+                            </div>
+
+                            <button onclick="moveSlider(this, 1)" class="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/60 text-white w-8 h-8 rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+
+                            <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] px-3 py-1 rounded-full font-black tracking-tighter z-10">
+                                <i class="fas fa-images mr-1"></i> ${photoLinks.length} FOTO (GESER)
+                            </div>
+                        </div>`;
+                } else {
+                    const img = fixDriveLink(photoLinks[0]) || "https://via.placeholder.com/400x300/1F3A5F/FFFFFF?text=Athalia+News";
+                    photoHTML = `<img src="${img}" class="w-full h-64 object-cover">`;
+                }
+
+                div.innerHTML = `
+                    <div class="relative">${photoHTML}
+                        <span class="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-1 rounded-full text-[10px] font-black text-blue-900 shadow-sm uppercase tracking-widest z-10">${item.Unit}</span>
+                    </div>
+                    <div class="p-6 md:p-7 flex-grow flex flex-col">
+                        <div class="text-[11px] text-blue-600 font-black uppercase tracking-widest mb-2">${item.Nilai || 'Inspirasi'}</div>
+                        <h3 class="text-xl font-bold text-gray-900 leading-tight mb-4">${item.Kegiatan}</h3>
+                        <p class="text-gray-700 text-sm md:text-base leading-relaxed mb-6 font-medium italic">"${item.Cerita}"</p>
+                        
+                        <div class="mt-auto space-y-3">
+                            ${item.Album_Drive && item.Album_Drive !== "-" ? `
+                            <a href="${item.Album_Drive}" target="_blank" class="flex items-center justify-center w-full bg-blue-50 text-blue-700 py-3 rounded-2xl text-[12px] font-black hover:bg-blue-100 transition border-2 border-blue-100">
+                                <i class="fab fa-google-drive mr-2 text-lg"></i> BUKA ALBUM DRIVE
+                            </a>` : ''}
+
+                            <button onclick="shareToWA('${item.Kegiatan}', '${item.Cerita}')" class="flex items-center justify-center w-full bg-emerald-500 text-white py-3 rounded-2xl text-[12px] font-black hover:bg-emerald-600 shadow-md transition">
+                                <i class="fab fa-whatsapp mr-2 text-xl"></i> SHARE KE WA STATUS
+                            </button>
+
+                            <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-[11px] text-gray-400 font-bold uppercase tracking-tighter">
+                                <span><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal ? item.Tanggal.toString().split('T')[0] : ''}</span>
+                                <button onclick="copyCaption('${item.Kegiatan}', '${item.Cerita}')" class="text-blue-900 bg-blue-50 px-2 py-1 rounded">SALIN CAPTION</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function shareToWA(title, story) {
+            const text = `✨ *MOMEN ATHALIA* ✨\n\n*${title}*\n\n"${story}"\n\n📲 _Dapatkan inspirasi harian di Newsroom Athalia!_`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function copyCaption(title, story) {
+            const text = `✨ *${title}* ✨\n\n${story}\n\n#SekolahAthalia #NewsroomAthalia`;
+            navigator.clipboard.writeText(text);
+            alert("Caption berhasil disalin!");
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
