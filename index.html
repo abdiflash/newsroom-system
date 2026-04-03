@@ -10,22 +10,36 @@
         body { background-color: #f4f7f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .athalia-blue { background-color: #1F3A5F; }
         .card-story:hover { transform: translateY(-5px); transition: 0.3s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
 
-    <header class="athalia-blue text-white py-6 shadow-lg">
+    <header class="athalia-blue text-white py-6 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight">ATHALIA <span class="font-light text-blue-200">NEWSROOM</span></h1>
                 <p class="text-xs opacity-75">Membangun Kepercayaan Melalui Cerita</p>
             </div>
-            <i class="fas fa-newspaper text-3xl opacity-50"></i>
+            <i class="fas fa-shield-alt text-2xl opacity-50"></i>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-8">
         
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-xl shadow-sm">
+            <div class="flex">
+                <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                <div class="ml-3">
+                    <p class="text-xs text-blue-800 leading-relaxed font-medium">
+                        <strong>PERHATIAN:</strong> Sesuai UU No 17 Th 2025 tentang privasi anak, akses album foto lengkap dibatasi. 
+                        Gunakan email <strong>athalia.parents@sekolahathalia.sch.id</strong> untuk masuk ke Google Drive.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="flex flex-wrap gap-4 mb-8 items-center bg-white p-4 rounded-xl shadow-sm">
             <div class="flex items-center gap-2">
                 <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Unit:</span>
@@ -37,22 +51,21 @@
                     <option value="SMA">SMA</option>
                 </select>
             </div>
-            <div class="flex-grow text-right text-xs text-gray-400">
-                Data Terakhir di-update otomatis dari Google Sheets
+            <div class="flex-grow text-right text-[10px] text-gray-400">
+                Update otomatis via Google Sheets
             </div>
         </div>
 
         <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div class="col-span-full text-center py-20">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-900"></div>
-                <p class="mt-4 text-gray-500">Menyusun momen berharga...</p>
             </div>
         </div>
     </main>
 
     <script>
-        // GANTI INI dengan URL /exec hasil deploy baru tadi!
-        const API_URL = "https://script.google.com/macros/s/AKfycbzIQJRxMmGzKRXTg3bhOjj8d-CWecQ1e5o-qVtWk0CVICT-eNupKfAfxNnBaUpkjB3C/exec";
+        // MASUKKAN URL EXEC BARU ANDA DI SINI
+        const API_URL = "https://script.google.com/macros/s/AKfycbwMxxJKB22P2rnwHycKpeFJvC1bn-x1_mHlzvS_ub5p9SrONRzfUL9kwL0pEuJH6Y8/exec";
         let rawData = [];
 
         async function loadData() {
@@ -61,8 +74,14 @@
                 rawData = await response.json();
                 renderCards();
             } catch (err) {
-                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full">Error koneksi: ${err.message}</p>`;
+                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full">Error: ${err.message}</p>`;
             }
+        }
+
+        // Fungsi membersihkan link Drive
+        function fixDriveLink(url) {
+            if (!url || url === "-") return "";
+            return url.trim().replace("/view?usp=sharing", "").replace("file/d/", "uc?export=view&id=");
         }
 
         function renderCards() {
@@ -77,7 +96,7 @@
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 italic">Belum ada konten terpilih untuk unit ini.</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 italic">Belum ada konten.</div>`;
                 return;
             }
 
@@ -85,20 +104,48 @@
                 const div = document.createElement("div");
                 div.className = "bg-white rounded-2xl overflow-hidden shadow-md card-story flex flex-col border border-gray-100";
                 
-                const imgSource = (item.Foto && item.Foto !== "-") ? item.Foto : "https://via.placeholder.com/400x250/1F3A5F/FFFFFF?text=Athalia+Activity";
+                // Proses Multi-Foto Slider
+                const photoLinks = (item.Foto || "").split(",");
+                let photoHTML = "";
+
+                if (photoLinks.length > 1) {
+                    photoHTML = `
+                        <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar h-56 bg-gray-200">
+                            ${photoLinks.map(link => `<img src="${fixDriveLink(link)}" class="snap-center shrink-0 w-full h-full object-cover">`).join('')}
+                        </div>
+                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] px-2 py-1 rounded-full font-bold">
+                            <i class="fas fa-images mr-1"></i> ${photoLinks.length} FOTO (GESER)
+                        </div>`;
+                } else {
+                    const singleImg = fixDriveLink(photoLinks[0]) || "https://via.placeholder.com/400x250/1F3A5F/FFFFFF?text=Athalia+News";
+                    photoHTML = `<img src="${singleImg}" class="w-full h-56 object-cover">`;
+                }
 
                 div.innerHTML = `
-                    <div class="relative h-48 w-full bg-gray-200">
-                        <img src="${imgSource}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x250?text=Image+Loading...'">
-                        <span class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold text-blue-900 shadow-sm uppercase">${item.Unit}</span>
+                    <div class="relative">${photoHTML}
+                        <span class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold text-blue-900 uppercase">${item.Unit}</span>
                     </div>
                     <div class="p-6 flex-grow flex flex-col">
                         <div class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-2">${item.Nilai || 'Pertumbuhan'}</div>
                         <h3 class="text-lg font-bold text-gray-800 leading-tight mb-3">${item.Kegiatan}</h3>
-                        <p class="text-gray-600 text-sm line-clamp-4 mb-4 leading-relaxed italic">"${item.Cerita}"</p>
-                        <div class="mt-auto pt-4 border-t border-gray-50 flex justify-between items-center">
-                            <span class="text-[10px] text-gray-400"><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal.split('T')[0] || item.Tanggal}</span>
-                            <button onclick="copyCaption('${item.Kegiatan}', '${item.Cerita}')" class="text-xs text-blue-800 font-bold hover:underline"><i class="fas fa-copy mr-1"></i> Caption</button>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-5 italic">"${item.Cerita}"</p>
+                        
+                        <div class="mt-auto space-y-3">
+                            ${item.Album_Drive && item.Album_Drive !== "-" ? `
+                            <a href="${item.Album_Drive}" target="_blank" class="flex items-center justify-center w-full bg-blue-50 text-blue-700 py-2.5 rounded-xl text-[11px] font-bold hover:bg-blue-100 transition border border-blue-100">
+                                <i class="fab fa-google-drive mr-2 text-blue-500"></i> LIHAT ALBUM LENGKAP
+                            </a>` : ''}
+
+                            <button onclick="shareToWA('${item.Kegiatan}', '${item.Cerita}')" class="flex items-center justify-center w-full bg-emerald-500 text-white py-2.5 rounded-xl text-[11px] font-bold hover:bg-emerald-600 shadow-sm transition">
+                                <i class="fab fa-whatsapp mr-2 text-lg"></i> SHARE KE WA STATUS
+                            </button>
+
+                            <div class="pt-3 border-t border-gray-50 flex justify-between items-center">
+                                <span class="text-[10px] text-gray-400 font-medium"><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal ? (typeof item.Tanggal === 'string' ? item.Tanggal.split('T')[0] : '') : ''}</span>
+                                <button onclick="copyCaption('${item.Kegiatan}', '${item.Cerita}')" class="text-[10px] text-gray-400 font-bold hover:text-blue-900 uppercase">
+                                    <i class="fas fa-copy mr-1"></i> Copy
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -106,10 +153,15 @@
             });
         }
 
+        function shareToWA(title, story) {
+            const text = `✨ *MOMEN ATHALIA* ✨\n\n*${title}*\n\n"${story}"\n\n📲 _Dapatkan inspirasi lengkap di Newsroom Athalia!_`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
         function copyCaption(title, story) {
-            const text = `✨ *${title}* ✨\n\n${story}\n\n#SekolahAthalia #KarakterSiswa`;
+            const text = `✨ *${title}* ✨\n\n${story}\n\n#SekolahAthalia #NewsroomAthalia`;
             navigator.clipboard.writeText(text);
-            alert("Caption siap tempel untuk IG/WA!");
+            alert("Caption disalin!");
         }
 
         loadData();
