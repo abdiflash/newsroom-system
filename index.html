@@ -7,65 +7,54 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f9; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         .athalia-blue { background-color: #1F3A5F; }
         .card-story:hover { transform: translateY(-5px); transition: 0.3s; }
+        /* Smooth Horizontal Scroll untuk Slider */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x mandatory; }
+        .snap-item { scroll-snap-align: center; }
     </style>
 </head>
 <body>
 
-    <header class="athalia-blue text-white py-6 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4 flex justify-between items-center">
+    <header class="athalia-blue text-white py-5 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-5 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">ATHALIA <span class="font-light text-blue-200">NEWSROOM</span></h1>
-                <p class="text-xs opacity-75">Membangun Kepercayaan Melalui Cerita</p>
+                <h1 class="text-xl md:text-2xl font-extrabold tracking-tight uppercase">ATHALIA <span class="font-light text-blue-200">NEWSROOM</span></h1>
+                <p class="text-[10px] md:text-xs opacity-85 font-medium tracking-wide">Membangun Kepercayaan Melalui Cerita</p>
             </div>
-            <i class="fas fa-shield-alt text-2xl opacity-50"></i>
+            <i class="fas fa-shield-alt text-xl opacity-40"></i>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-6">
         
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-xl shadow-sm">
-            <div class="flex">
-                <i class="fas fa-info-circle text-blue-500 mt-1"></i>
-                <div class="ml-3">
-                    <p class="text-xs text-blue-800 leading-relaxed font-medium">
-                        <strong>PERHATIAN:</strong> Sesuai UU No 17 Th 2025 tentang privasi anak, akses album foto lengkap dibatasi. 
-                        Gunakan email <strong>athalia.parents@sekolahathalia.sch.id</strong> untuk masuk ke Google Drive.
-                    </p>
-                </div>
-            </div>
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 mb-6 rounded-r-xl shadow-sm">
+            <p class="text-[11px] md:text-xs text-blue-900 leading-relaxed font-semibold">
+                <i class="fas fa-user-lock mr-1"></i> PRIVASI: Akses album penuh memerlukan login email <span class="underline">athalia.parents@sekolahathalia.sch.id</span>.
+            </p>
         </div>
 
-        <div class="flex flex-wrap gap-4 mb-8 items-center bg-white p-4 rounded-xl shadow-sm">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Unit:</span>
-                <select id="filterUnit" onchange="renderCards()" class="border-none bg-gray-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
-                    <option value="ALL">Semua Unit</option>
-                    <option value="TK">TK</option>
-                    <option value="SD">SD</option>
-                    <option value="SMP">SMP</option>
-                    <option value="SMA">SMA</option>
-                </select>
-            </div>
-            <div class="flex-grow text-right text-[10px] text-gray-400">
-                Update otomatis via Google Sheets
-            </div>
+        <div class="flex flex-wrap gap-3 mb-6 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Unit:</span>
+            <select id="filterUnit" onchange="renderCards()" class="bg-gray-100 rounded-lg px-4 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none border-none">
+                <option value="ALL">Semua Unit</option>
+                <option value="TK">TK</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA">SMA</option>
+            </select>
         </div>
 
-        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="col-span-full text-center py-20">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-900"></div>
-            </div>
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="col-span-full text-center py-20 italic text-gray-400 text-sm">Menyusun momen berharga...</div>
         </div>
     </main>
 
     <script>
-        // MASUKKAN URL EXEC BARU ANDA DI SINI
-        const API_URL = "https://script.google.com/macros/s/AKfycbwMxxJKB22P2rnwHycKpeFJvC1bn-x1_mHlzvS_ub5p9SrONRzfUL9kwL0pEuJH6Y8/exec";
+        // MASUKKAN URL EXEC ANDA DI SINI
+        const API_URL = "https://script.google.com/macros/s/AKfycbylwhixi3X_jWCDPMxyUxMmF5-UXE0s1K14GZSi6HcD14ri5FPBPzw04QrCLE6WgqTv/exec";
         let rawData = [];
 
         async function loadData() {
@@ -74,14 +63,23 @@
                 rawData = await response.json();
                 renderCards();
             } catch (err) {
-                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full">Error: ${err.message}</p>`;
+                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full font-bold">Error Koneksi: Cek Link API</p>`;
             }
         }
 
-        // Fungsi membersihkan link Drive
+        // Fungsi fix link Drive dengan resolusi gambar lebih baik (lh3)
         function fixDriveLink(url) {
-            if (!url || url === "-") return "";
-            return url.trim().replace("/view?usp=sharing", "").replace("file/d/", "uc?export=view&id=");
+            if (!url || url === "-" || url.trim() === "") return "";
+            let id = "";
+            const parts = url.split("/");
+            const fileIdx = parts.indexOf("d");
+            if (fileIdx !== -1 && parts[fileIdx + 1]) {
+                id = parts[fileIdx + 1];
+            } else {
+                const match = url.match(/id=([\w-]+)/);
+                if (match) id = match[1];
+            }
+            return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
         }
 
         function renderCards() {
@@ -96,55 +94,55 @@
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 italic">Belum ada konten.</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 font-medium italic">Belum ada konten untuk unit ini.</div>`;
                 return;
             }
 
             filtered.forEach(item => {
                 const div = document.createElement("div");
-                div.className = "bg-white rounded-2xl overflow-hidden shadow-md card-story flex flex-col border border-gray-100";
+                div.className = "bg-white rounded-3xl overflow-hidden shadow-sm card-story flex flex-col border border-gray-100";
                 
-                // Proses Multi-Foto Slider
-                const photoLinks = (item.Foto || "").split(",");
+                // Slider Logic
+                const photoLinks = (item.Foto || "").split(",").map(p => p.trim());
                 let photoHTML = "";
 
-                if (photoLinks.length > 1) {
+                if (photoLinks.length > 1 && photoLinks[0] !== "-") {
                     photoHTML = `
-                        <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar h-56 bg-gray-200">
-                            ${photoLinks.map(link => `<img src="${fixDriveLink(link)}" class="snap-center shrink-0 w-full h-full object-cover">`).join('')}
+                        <div class="flex overflow-x-auto no-scrollbar h-64 bg-gray-100">
+                            ${photoLinks.map(link => `<img src="${fixDriveLink(link)}" class="snap-item shrink-0 w-full h-full object-cover">`).join('')}
                         </div>
-                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] px-2 py-1 rounded-full font-bold">
+                        <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] px-3 py-1 rounded-full font-black tracking-tighter">
                             <i class="fas fa-images mr-1"></i> ${photoLinks.length} FOTO (GESER)
                         </div>`;
                 } else {
-                    const singleImg = fixDriveLink(photoLinks[0]) || "https://via.placeholder.com/400x250/1F3A5F/FFFFFF?text=Athalia+News";
-                    photoHTML = `<img src="${singleImg}" class="w-full h-56 object-cover">`;
+                    const img = fixDriveLink(photoLinks[0]) || "https://via.placeholder.com/400x300/1F3A5F/FFFFFF?text=Athalia+News";
+                    photoHTML = `<img src="${img}" class="w-full h-64 object-cover">`;
                 }
 
                 div.innerHTML = `
                     <div class="relative">${photoHTML}
-                        <span class="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold text-blue-900 uppercase">${item.Unit}</span>
+                        <span class="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-1 rounded-full text-[10px] font-black text-blue-900 shadow-sm uppercase tracking-widest">${item.Unit}</span>
                     </div>
-                    <div class="p-6 flex-grow flex flex-col">
-                        <div class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-2">${item.Nilai || 'Pertumbuhan'}</div>
-                        <h3 class="text-lg font-bold text-gray-800 leading-tight mb-3">${item.Kegiatan}</h3>
-                        <p class="text-gray-600 text-sm line-clamp-3 mb-5 italic">"${item.Cerita}"</p>
+                    <div class="p-6 md:p-7 flex-grow flex flex-col">
+                        <div class="text-[11px] text-blue-600 font-black uppercase tracking-widest mb-2">${item.Nilai || 'Inspirasi'}</div>
+                        
+                        <h3 class="text-xl font-bold text-gray-900 leading-tight mb-4">${item.Kegiatan}</h3>
+                        
+                        <p class="text-gray-700 text-sm md:text-base leading-relaxed mb-6 font-medium italic">"${item.Cerita}"</p>
                         
                         <div class="mt-auto space-y-3">
                             ${item.Album_Drive && item.Album_Drive !== "-" ? `
-                            <a href="${item.Album_Drive}" target="_blank" class="flex items-center justify-center w-full bg-blue-50 text-blue-700 py-2.5 rounded-xl text-[11px] font-bold hover:bg-blue-100 transition border border-blue-100">
-                                <i class="fab fa-google-drive mr-2 text-blue-500"></i> LIHAT ALBUM LENGKAP
+                            <a href="${item.Album_Drive}" target="_blank" class="flex items-center justify-center w-full bg-blue-50 text-blue-700 py-3 rounded-2xl text-[12px] font-black hover:bg-blue-100 transition border-2 border-blue-100">
+                                <i class="fab fa-google-drive mr-2 text-lg"></i> BUKA ALBUM DRIVE
                             </a>` : ''}
 
-                            <button onclick="shareToWA('${item.Kegiatan}', '${item.Cerita}')" class="flex items-center justify-center w-full bg-emerald-500 text-white py-2.5 rounded-xl text-[11px] font-bold hover:bg-emerald-600 shadow-sm transition">
-                                <i class="fab fa-whatsapp mr-2 text-lg"></i> SHARE KE WA STATUS
+                            <button onclick="shareToWA('${item.Kegiatan}', '${item.Cerita}')" class="flex items-center justify-center w-full bg-emerald-500 text-white py-3 rounded-2xl text-[12px] font-black hover:bg-emerald-600 shadow-md transition">
+                                <i class="fab fa-whatsapp mr-2 text-xl"></i> SHARE KE WA STATUS
                             </button>
 
-                            <div class="pt-3 border-t border-gray-50 flex justify-between items-center">
-                                <span class="text-[10px] text-gray-400 font-medium"><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal ? (typeof item.Tanggal === 'string' ? item.Tanggal.split('T')[0] : '') : ''}</span>
-                                <button onclick="copyCaption('${item.Kegiatan}', '${item.Cerita}')" class="text-[10px] text-gray-400 font-bold hover:text-blue-900 uppercase">
-                                    <i class="fas fa-copy mr-1"></i> Copy
-                                </button>
+                            <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-[11px] text-gray-400 font-bold uppercase tracking-tighter">
+                                <span><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal ? item.Tanggal.toString().split('T')[0] : ''}</span>
+                                <button onclick="copyCaption('${item.Kegiatan}', '${item.Cerita}')" class="text-blue-900 bg-blue-50 px-2 py-1 rounded">SALIN CAPTION</button>
                             </div>
                         </div>
                     </div>
@@ -154,14 +152,14 @@
         }
 
         function shareToWA(title, story) {
-            const text = `✨ *MOMEN ATHALIA* ✨\n\n*${title}*\n\n"${story}"\n\n📲 _Dapatkan inspirasi lengkap di Newsroom Athalia!_`;
+            const text = `✨ *MOMEN ATHALIA* ✨\n\n*${title}*\n\n"${story}"\n\n📲 _Dapatkan inspirasi harian di Newsroom Athalia!_`;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
         function copyCaption(title, story) {
             const text = `✨ *${title}* ✨\n\n${story}\n\n#SekolahAthalia #NewsroomAthalia`;
             navigator.clipboard.writeText(text);
-            alert("Caption disalin!");
+            alert("Caption berhasil disalin ke clipboard!");
         }
 
         loadData();
