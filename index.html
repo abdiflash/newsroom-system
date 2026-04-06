@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsroom Athalia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f9; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        .athalia-blue { background-color: #1F3A5F; }
+        .card-story:hover { transform: translateY(-5px); transition: 0.3s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x mandatory; }
+        .snap-item { scroll-snap-align: center; }
+        img { -webkit-touch-callout: default !important; }
+    </style>
+</head>
+<body>
+
+    <header class="athalia-blue text-white py-5 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-5">
+            <h1 class="text-xl md:text-2xl font-extrabold tracking-tight uppercase">ATHALIA <span class="font-light text-blue-200">NEWSROOM</span></h1>
+            <p class="text-[10px] md:text-xs opacity-85 font-medium tracking-wide">Membangun Kepercayaan Melalui Cerita</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6">
+        
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 mb-6 rounded-r-xl shadow-sm">
+            <p class="text-[11px] md:text-xs text-blue-900 leading-relaxed font-semibold">
+                <i class="fas fa-user-lock mr-1"></i> PRIVASI: Akses album penuh memerlukan login email <span class="underline">unit.album@sekolahathalia.sch.id</span>.
+            </p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-8 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari kegiatan atau cerita..." 
+                    class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black text-gray-400 uppercase hidden md:inline">Unit:</span>
+                    <select id="filterUnit" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                        <option value="ALL">Semua Unit</option>
+                        <option value="TK">TK</option>
+                        <option value="SD">SD</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMA">SMA</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-black text-gray-400 uppercase hidden md:inline">Urutan:</span>
+                    <select id="sortOrder" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+                        <option value="NEWEST">Terbaru</option>
+                        <option value="OLDEST">Terlama</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="col-span-full text-center py-20 italic text-gray-400 text-sm">Menyusun momen berharga...</div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyZ8birzF35diykI4p5Z0Tqpu6V1gRDf3m95sPCR2-1CqVMwLxkEC_Rxt7MA-tPuidC/exec";
+        let rawData = [];
+
+        async function loadData() {
+            try {
+                const response = await fetch(API_URL);
+                rawData = await response.json();
+                applyFilters();
+            } catch (err) {
+                document.getElementById('list').innerHTML = `<p class="text-red-500 text-center col-span-full font-bold">Gagal memuat data.</p>`;
+            }
+        }
+
+        function fixDriveLink(url) {
+            if (!url || url === "-" || url.trim() === "") return "";
+            let id = "";
+            const match = url.match(/[-\w]{25,}/);
+            if (match) id = match[0];
+            return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
+        }
+
+        function moveSlider(btn, direction) {
+            const container = btn.parentElement.querySelector('.no-scrollbar');
+            container.scrollBy({ left: direction * container.clientWidth, behavior: 'smooth' });
+        }
+
+        function applyFilters() {
+            const filterUnit = document.getElementById("filterUnit").value;
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            const sortOrder = document.getElementById("sortOrder").value;
+
+            let filtered = rawData.filter(item => {
+                const statusStr = item.Status ? item.Status.toString().toUpperCase() : "";
+                const isStatusValid = (statusStr === "TAYANG"); 
+                const isUnitValid = (filterUnit === "ALL" || item.Unit === filterUnit);
+                const searchStr = (item.Kegiatan + " " + item.Cerita).toLowerCase();
+                const isSearchValid = searchStr.includes(searchTerm);
+
+                return isStatusValid && isUnitValid && isSearchValid;
+            });
+
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.Tanggal);
+                const dateB = new Date(b.Tanggal);
+                return sortOrder === "NEWEST" ? dateB - dateA : dateA - dateB;
+            });
+
+            renderCards(filtered);
+        }
+
+        function renderCards(data) {
+            const container = document.getElementById("list");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-20 italic text-gray-400">Tidak ada hasil yang ditemukan.</div>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "bg-white rounded-3xl overflow-hidden shadow-sm card-story flex flex-col border border-gray-100";
+                
+                const photoLinks = (item.Foto || "").split(",").map(p => p.trim()).filter(p => p !== "" && p !== "-");
+                let photoHTML = "";
+
+                if (photoLinks.length > 0) {
+                    if (photoLinks.length > 1) {
+                        photoHTML = `
+                            <div class="relative group h-64">
+                                <button onclick="moveSlider(this, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-chevron-left text-[10px]"></i>
+                                </button>
+                                <div class="flex overflow-x-auto no-scrollbar h-full bg-gray-100 scroll-smooth">
+                                    ${photoLinks.map(link => `<img src="${fixDriveLink(link)}" class="snap-item shrink-0 w-full h-full object-cover">`).join('')}
+                                </div>
+                                <button onclick="moveSlider(this, 1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/30 text-white w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-chevron-right text-[10px]"></i>
+                                </button>
+                                <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[9px] px-3 py-1 rounded-full font-black z-10 uppercase">
+                                    <i class="fas fa-images mr-1"></i> ${photoLinks.length} Foto
+                                </div>
+                            </div>`;
+                    } else {
+                        photoHTML = `<img src="${fixDriveLink(photoLinks[0])}" class="w-full h-64 object-cover">`;
+                    }
+                } else {
+                    photoHTML = `<div class="w-full h-64 bg-gray-50 flex flex-col items-center justify-center text-gray-300"><i class="far fa-image text-4xl mb-2"></i></div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="relative">${photoHTML}
+                        <span class="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-1 rounded-full text-[10px] font-black text-blue-900 shadow-sm uppercase z-10">${item.Unit}</span>
+                    </div>
+                    <div class="p-6 md:p-7 flex-grow flex flex-col">
+                        <div class="text-[13px] text-blue-600 font-black uppercase tracking-widest mb-2">${item.Nilai || 'Inspirasi'}</div>
+                        <h3 class="text-xl font-bold text-gray-900 leading-tight mb-4">${item.Kegiatan}</h3>
+                        <p class="text-gray-700 text-sm leading-relaxed mb-6 font-medium italic">"${item.Cerita}"</p>
+                        <div class="mt-auto space-y-3">
+                            ${item.Album_Drive && item.Album_Drive !== "-" ? `
+                            <a href="${item.Album_Drive}" target="_blank" class="flex items-center justify-center w-full bg-blue-50 text-blue-700 py-3 rounded-2xl text-[11px] font-black hover:bg-blue-100 transition border-2 border-blue-100">
+                                <i class="fab fa-google-drive mr-2"></i> BUKA ALBUM DRIVE
+                            </a>` : ''}
+                            ${item.Youtube && item.Youtube !== "-" ? `
+                            <a href="${item.Youtube}" target="_blank" class="flex items-center justify-center w-full bg-red-50 text-red-600 py-3 rounded-2xl text-[11px] font-black hover:bg-red-100 transition border-2 border-red-100">
+                                <i class="fab fa-youtube mr-2"></i> TONTON DI YOUTUBE
+                            </a>` : ''}
+                            <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-[11px] text-gray-400 font-bold uppercase">
+                                <span><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal ? new Date(item.Tanggal).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : ''}</span>
+                                <button onclick="copyCaption('${item.Kegiatan.replace(/'/g, "\\'")}', '${item.Cerita.replace(/'/g, "\\'")}')" class="text-blue-900 bg-blue-50 px-3 py-2 rounded-lg font-black hover:bg-blue-100 transition">SALIN CAPTION</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function copyCaption(title, story) {
+            const text = `✨ *${title}* ✨\n\n${story}\n\n#SekolahAthalia #NewsroomAthalia`;
+            navigator.clipboard.writeText(text).then(() => alert("Caption berhasil disalin!"));
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
