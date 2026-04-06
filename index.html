@@ -175,10 +175,12 @@
                             <a href="${item.Album_Drive}" target="_blank" class="flex items-center justify-center w-full bg-blue-50 text-blue-700 py-3 rounded-2xl text-[11px] font-black hover:bg-blue-100 transition border-2 border-blue-100">
                                 <i class="fab fa-google-drive mr-2"></i> BUKA ALBUM DRIVE
                             </a>` : ''}
+                            
+
                             ${item.Youtube && item.Youtube !== "-" ? `
-                            <a href="${item.Youtube}" target="_blank" class="flex items-center justify-center w-full bg-red-50 text-red-600 py-3 rounded-2xl text-[11px] font-black hover:bg-red-100 transition border-2 border-red-100">
-                                <i class="fab fa-youtube mr-2"></i> TONTON DI YOUTUBE
-                            </a>` : ''}
+    <a href="${item.Youtube}" target="_blank" class="flex items-center justify-center w-full bg-slate-50 text-slate-700 py-3 rounded-2xl text-[11px] font-black hover:bg-slate-100 transition border-2 border-slate-200">
+        <i class="fas fa-play-circle mr-2 text-lg"></i> TONTON VIDEO
+    </a>` : ''}
                             <div class="pt-4 border-t border-gray-100 flex justify-between items-center text-[11px] text-gray-400 font-bold uppercase">
                                 <span><i class="far fa-calendar-alt mr-1"></i> ${item.Tanggal ? new Date(item.Tanggal).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : ''}</span>
                                 <button onclick="copyCaption('${item.Kegiatan.replace(/'/g, "\\'")}', '${item.Cerita.replace(/'/g, "\\'")}')" class="text-blue-900 bg-blue-50 px-3 py-2 rounded-lg font-black hover:bg-blue-100 transition">SALIN CAPTION</button>
