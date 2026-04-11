@@ -84,15 +84,15 @@
         }
 
         
+        
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return "";
-                let id = "";
-                const match = url.match(/[-\w]{25,}/);
+            const match = url.match(/[-\w]{25,}/);
             if (match) {
-                id = match[0];
-                // Menggunakan format server gambar Google yang paling stabil & cepat
-                return `https://lh3.googleusercontent.com/d/$${id}=w800`;
-                }
+                const id = match[0];
+                // Menggunakan link resmi Google Drive untuk menampilkan gambar
+                return `https://drive.google.com/uc?export=view&id=${id}`;
+            }
             return url;
         }
 
