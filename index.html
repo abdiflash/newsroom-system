@@ -83,12 +83,17 @@
             }
         }
 
+       
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return "";
-            let id = "";
-            const match = url.match(/[-\w]{25,}/);
-            if (match) id = match[0];
-            return id ? `https://lh3.googleusercontent.com/u/0/d/$${id}=w800` : url;
+                let id = "";
+                const match = url.match(/[-\w]{25,}/);
+            if (match) {
+                id = match[0];
+                // Menggunakan format server gambar Google yang paling stabil & cepat
+                return `https://lh3.googleusercontent.com/d/${id}=w800`;
+                }
+            return url;
         }
 
         function moveSlider(btn, direction) {
