@@ -94,15 +94,19 @@
             }
         }
 
-        // PERBAIKAN: Fungsi Thumbnail menggunakan link resmi Drive yang stabil
+        // Fungsi fix link Drive dengan resolusi gambar lebih baik (lh3)
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return "";
-            const match = url.match(/[-\w]{25,}/);
-            if (match) {
-                const id = match[0];
-                return `https://drive.google.com/uc?export=view&id=${id}`;
+            let id = "";
+            const parts = url.split("/");
+            const fileIdx = parts.indexOf("d");
+            if (fileIdx !== -1 && parts[fileIdx + 1]) {
+                id = parts[fileIdx + 1];
+            } else {
+                const match = url.match(/id=([\w-]+)/);
+                if (match) id = match[1];
             }
-            return url;
+            return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
         }
 
         function moveSlider(btn, direction) {
